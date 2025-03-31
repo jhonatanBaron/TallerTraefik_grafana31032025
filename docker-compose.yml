@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:v2.9
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080" # Dashboard de Traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+ ## INtegración del servicio con Express
+  api:
+    image: node:16
+    working_dir: /app
+    volumes:
+      - ./api:/app
+    command: "node server.js"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.localhost`)"
+      - "traefik.http.services.api.loadbalancer.server.port=3000"
+ ## Integracion de Nginx
+  nginx:
+    image: nginx
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nginx.rule=Host(`nginx.localhost`)"
+      - "traefik.http.services.nginx.loadbalancer.server.port=80"
+
+## Parte 3: Implementación de Middlewares
+# Middleware de autenticación básica
+middlewares:
+  auth:
+    basicAuth:
+      users:
+        - "admin:$apr1$8dAqE.2G$d9AfL77QhE/Z7AeYxq8Xr1" # Contraseña cifrada (admin:password)
+
+  api:
+    labels:
+      - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$8dAqE.2G$$d9AfL77QhE/Z7AeYxq8Xr1"
+      - "traefik.http.routers.api.middlewares=auth"
+
+## Parte 4: Validación y Pruebas
+# Comandos para ejecutar los servicios
+# docker-compose up -d
+# Acceder a los servicios a través de api.localhost y nginx.localhost
+
+## Parte 5: Desafío Técnico
+# Balanceo de Carga y Monitoreo
+  api-replica1:
+    image: node:16
+    working_dir: /app
+    volumes:
+      - ./api:/app
+    command: "node server.js"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.localhost`)"
+      - "traefik.http.services.api.loadbalancer.server.port=3000"
+
+  api-replica2:
+    image: node:16
+    working_dir: /app
+    volumes:
+      - ./api:/app
+    command: "node server.js"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.localhost`)"
+      - "traefik.http.services.api.loadbalancer.server.port=3000"
+
+  monitoring:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  grafana_data:
