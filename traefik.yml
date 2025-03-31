@@ -1,4 +1,4 @@
-## Parte 1: Configuración Inicial de TraefikentryPoints:
+##Configuración Inicial de TraefikentryPoints:
   web:
     address: ":80"
   websecure:
