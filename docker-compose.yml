@@ -31,7 +31,7 @@ services:
       - "traefik.http.routers.nginx.rule=Host(`nginx.localhost`)"
       - "traefik.http.services.nginx.loadbalancer.server.port=80"
 
-## Parte 3: Implementación de Middlewares
+## Implementación de Middlewares
 # Middleware de autenticación básica
 middlewares:
   auth:
@@ -44,12 +44,7 @@ middlewares:
       - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$8dAqE.2G$$d9AfL77QhE/Z7AeYxq8Xr1"
       - "traefik.http.routers.api.middlewares=auth"
 
-## Parte 4: Validación y Pruebas
-# Comandos para ejecutar los servicios
-# docker-compose up -d
-# Acceder a los servicios a través de api.localhost y nginx.localhost
 
-## Parte 5: Desafío Técnico
 # Balanceo de Carga y Monitoreo
   api-replica1:
     image: node:16
