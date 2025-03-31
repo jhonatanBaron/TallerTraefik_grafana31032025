@@ -1,4 +1,5 @@
 Preguntas del taller
+Estudiante : Jhonatan Steven Baron Suarez
 
 1. ¿Cómo detecta Traefik los servicios configurados en Docker Compose?
 
